@@ -1,93 +1,130 @@
 ---
-import GitHub from "./icons/GitHub.astro"
-import NextJS from "./icons/NextJS.astro"
-import Tailwind from "./icons/Tailwind.astro"
-import Link from "./icons/Link.astro"
-import LinkButton from "./LinkButton.astro"
+import GitHub from "./icons/GitHub.astro";
+import NextJS from "./icons/NextJS.astro";
+import Tailwind from "./icons/Tailwind.astro";
+import Link from "./icons/Link.astro";
+import LinkButton from "./LinkButton.astro";
 
 const TAGS = {
-  NEXT: {
-    name: "Next.js",
+  SPRING: {
+    name: "Spring Boot",
     class: "bg-black text-white",
     icon: NextJS,
   },
-  TAILWIND: {
-    name: "Tailwind CSS",
+  VUE: {
+    name: "Vue",
     class: "bg-[#003159] text-white",
     icon: Tailwind,
   },
-}
+  PYTHON: {
+    name: "Python",
+    class: "bg-[#306998] text-white",
+    icon: NextJS,
+  },
+  CLI: {
+    name: "CLI",
+    class: "bg-gray-700 text-white",
+    icon: Tailwind,
+  },
+  JAVA: {
+    name: "Java",
+    class: "bg-[#b07219] text-white",
+    icon: NextJS,
+  },
+  MAVEN: {
+    name: "Maven",
+    class: "bg-[#c71a36] text-white",
+    icon: Tailwind,
+  },
+  GITHUB_API: {
+    name: "GitHub API",
+    class: "bg-[#24292e] text-white",
+    icon: NextJS,
+  },
+};
+
 const PROJECTS = [
   {
-    title: "SVGL - A beautiful library with SVG logos",
+    title: "Social Media Dashboard - con Java",
     description:
-      "Biblioteca de logos SVG de las marcas más populares. +10k visitas al mes. +2K svgs descargados. Creado desde cero con Next.js, React y Tailwind CSS.",
-    link: "https://svgl.vercel.app/",
-    github: "https://github.com/pheralb/svgl",
-    image: "/projects/svgl.webp",
-    tags: [TAGS.NEXT, TAGS.TAILWIND],
+      "Dashboard analítico en producción para explorar, a partir de datos de encuesta, la relación entre uso de redes sociales y métricas de salud mental con KPIs, gráficas interactivas y filtros avanzados. Backend en Java/Spring Boot con API REST, autenticación JWT y persistencia relacional (JPA/Hibernate), aplicando control de acceso y operaciones CRUD “user-scoped” (datos aislados por usuario y rutas protegidas). Arquitectura desacoplada desplegada por capas: SPA en Vue (Vite) + CoreUI en Netlify, backend en Render y base de datos en TiDB Cloud.",
+    preview: "https://jabejaranosocialmediadashboard.netlify.app/",
+    github: "https://github.com/JABejaranoVela/SocialMediaDashboard",
+    image: "/projects/socialMediaDashboard.png",
+    tags: [TAGS.SPRING, TAGS.VUE],
   },
   {
-    title: "AdventJS - Retos de programación con JavaScript y TypeScript",
+    title: "Task-Track - Python",
     description:
-      "Plataforma gratuita con retos de programación. Más de 1 millón de visitas en un mes. +50K retos completados. Creada desde cero con Next.js, React y Tailwind CSS.",
-    link: "https://adventjs.dev",
-    image: "/projects/adventjs.webp",
-    tags: [TAGS.NEXT, TAGS.TAILWIND],
+      "CLI en Python para gestionar tareas desde terminal con operaciones CRUD y cambio de estado (todo / in-progress / done). Incluye listados completos y filtrados por estado, con persistencia en JSON para mantener los datos entre ejecuciones. Registra timestamps y gestiona errores como IDs inexistentes con mensajes claros, además de un flujo de pruebas manuales sobre un JSON separado.",
+    github: "https://github.com/JABejaranoVela/Task-Track",
+    image: "/projects/task-cli-demo.gif",
+    tags: [TAGS.PYTHON, TAGS.CLI],
   },
-]
+  {
+    title: "GitHub Activity CLI - Java",
+    description:
+      "CLI en Java que obtiene y resume la actividad pública de un usuario en GitHub (Push, Issues, Stars, Forks, etc.) consumiendo la GitHub REST API. Procesa y normaliza los eventos para mostrarlos en consola con mensajes claros y legibles, gestionando respuestas vacías y errores de red/API. Implementa cliente HTTP nativo y parsing de JSON para un flujo eficiente y portable sin dependencias pesadas.",
+    github: "https://github.com/JABejaranoVela/GitHubActivityCLI",
+    image: "projects/github-activity-cli-demo.gif",
+    tags: [TAGS.JAVA, TAGS.MAVEN, TAGS.GITHUB_API],
+  },
+];
 ---
 
 <div class="flex flex-col gap-y-16">
   {
-    PROJECTS.map(({ image, title, description, tags, link, github }) => (
-    <article class="flex flex-col space-x-0 space-y-8 group md:flex-row md:space-x-8 md:space-y-0">
-  <div class="w-full md:w-1/2">
-    <div class="relative flex flex-col items-center col-span-6 row-span-5 gap-8 transition duration-500 ease-in-out transform shadow-xl overflow-clip rounded-xl sm:rounded-xl md:group-hover:-translate-y-1 md:group-hover:shadow-2xl lg:border lg:border-gray-800 lg:hover:border-gray-700 lg:hover:bg-gray-800/50">
-      <img alt="Recién llegado vs 5 años en Nueva Zelanda" class="object-cover object-top w-full h-56 transition duration-500 sm:h-full md:scale-110 md:group-hover:scale-105" loading="lazy" src={image} />
-    </div>
-  </div>
+    PROJECTS.map(({ image, title, description, tags, preview, github }) => (
+      <article class="flex flex-col space-x-0 space-y-8 group md:flex-row md:space-x-8 md:space-y-0">
+        <div class="w-full md:w-1/2">
+          <div class="relative flex flex-col items-center col-span-6 row-span-5 gap-8 transition duration-500 ease-in-out transform shadow-xl overflow-clip rounded-xl sm:rounded-xl md:group-hover:-translate-y-1 md:group-hover:shadow-2xl lg:border lg:border-gray-800 lg:hover:border-gray-700 lg:hover:bg-gray-800/50">
+            <img
+              alt="Proyectos Jose Antonio Bejarano Vela"
+              class="object-cover object-top w-full h-56 transition duration-500 md:scale-110 md:group-hover:scale-105"
+              loading="lazy"
+              src={image}
+            />
+          </div>
+        </div>
 
-  <div class="w-full md:w-1/2 md:max-w-lg">
-    <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
-      {title}
-    </h3>
-    <div class="flex flex-wrap mt-2">
-      <ul class="flex flex-row mb-2 gap-x-2">
-          {tags.map((tag) => (
-            <li>
-              <span
-                class={`flex gap-x-2 rounded-full text-xs ${tag.class} py-1 px-2 `}
-              >
-                <tag.icon class="size-4" />
-                {tag.name}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <div class="w-full md:w-1/2 md:max-w-lg">
+          <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
+            {title}
+          </h3>
+          <div class="flex flex-wrap mt-2">
+            <ul class="flex flex-row mb-2 gap-x-2">
+              {tags.map((tag) => (
+                <li>
+                  <span
+                    class={`flex gap-x-2 rounded-full text-xs ${tag.class} py-1 px-2 `}
+                  >
+                    <tag.icon class="size-4" />
+                    {tag.name}
+                  </span>
+                </li>
+              ))}
+            </ul>
 
-      <div class="mt-2 text-gray-700 dark:text-gray-400">{description}</div>
-      <footer class="flex items-end justify-start mt-4 gap-x-4">
-          {github && (
-            <LinkButton href={github}>
-              <GitHub class="size-6" />
-              Code
-              
-            </LinkButton>
-          )}
-          {link && (
-            <LinkButton href={link}>
-              <Link class="size-4" />
-              Preview
-            </LinkButton>
-          )}
-        </footer>
-    </div>
-  </div>
-</article>
+            <div class="mt-2 text-gray-700 dark:text-gray-400">
+              {description}
+            </div>
+            <footer class="flex items-end justify-start mt-4 gap-x-4">
+              {github && (
+                <LinkButton href={github}>
+                  <GitHub class="size-6" />
+                  Code
+                </LinkButton>
+              )}
+              {preview && (
+                <LinkButton href={preview}>
+                  <Link class="size-4" />
+                  Preview
+                </LinkButton>
+              )}
+            </footer>
+          </div>
+        </div>
+      </article>
     ))
   }
 </div>
-
-
-
