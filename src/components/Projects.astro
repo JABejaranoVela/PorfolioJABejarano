@@ -1,35 +1,40 @@
 ---
 import GitHub from "./icons/GitHub.astro";
-import NextJS from "./icons/NextJS.astro";
 import Tailwind from "./icons/Tailwind.astro";
 import Link from "./icons/Link.astro";
 import LinkButton from "./LinkButton.astro";
+import Java from "./icons/Java.astro";
+import Spring from "./icons/Spring.astro";
+import Python from "./icons/Python.astro";
+import CLI from "./icons/CLI.astro";
+import Vue from "./icons/Vue.astro";
+import SQL from "./icons/SQL.astro";
 
 const TAGS = {
   SPRING: {
     name: "Spring Boot",
     class: "bg-black text-white",
-    icon: NextJS,
+    icon: Spring,
   },
   VUE: {
     name: "Vue",
     class: "bg-[#003159] text-white",
-    icon: Tailwind,
+    icon: Vue,
   },
   PYTHON: {
     name: "Python",
     class: "bg-[#306998] text-white",
-    icon: NextJS,
+    icon: Python,
   },
   CLI: {
     name: "CLI",
     class: "bg-gray-700 text-white",
-    icon: Tailwind,
+    icon: CLI,
   },
   JAVA: {
     name: "Java",
-    class: "bg-[#b07219] text-white",
-    icon: NextJS,
+    class: "bg-[#EA2D2E]/20 text-white ring-1 ring-[#EA2D2E]/30",
+    icon: Java,
   },
   MAVEN: {
     name: "Maven",
@@ -39,7 +44,12 @@ const TAGS = {
   GITHUB_API: {
     name: "GitHub API",
     class: "bg-[#24292e] text-white",
-    icon: NextJS,
+    icon: GitHub,
+  },
+  SQL: {
+    name: "MySQL",
+    class: "bg-[#00618A]/25 text-white ring-1 ring-[#00618A]/30",
+    icon: SQL,
   },
 };
 
@@ -51,7 +61,7 @@ const PROJECTS = [
     preview: "https://jabejaranosocialmediadashboard.netlify.app/",
     github: "https://github.com/JABejaranoVela/SocialMediaDashboard",
     image: "/projects/socialMediaDashboard.png",
-    tags: [TAGS.SPRING, TAGS.VUE],
+    tags: [TAGS.SPRING, TAGS.VUE, TAGS.JAVA, TAGS.SQL],
   },
   {
     title: "Task-Track - Python",
@@ -66,8 +76,8 @@ const PROJECTS = [
     description:
       "CLI en Java que obtiene y resume la actividad pública de un usuario en GitHub (Push, Issues, Stars, Forks, etc.) consumiendo la GitHub REST API. Procesa y normaliza los eventos para mostrarlos en consola con mensajes claros y legibles, gestionando respuestas vacías y errores de red/API. Implementa cliente HTTP nativo y parsing de JSON para un flujo eficiente y portable sin dependencias pesadas.",
     github: "https://github.com/JABejaranoVela/GitHubActivityCLI",
-    image: "projects/github-activity-cli-demo.gif",
-    tags: [TAGS.JAVA, TAGS.MAVEN, TAGS.GITHUB_API],
+    image: "/projects/github-activity-cli-demo.gif",
+    tags: [TAGS.JAVA, TAGS.GITHUB_API, TAGS.CLI],
   },
 ];
 ---
