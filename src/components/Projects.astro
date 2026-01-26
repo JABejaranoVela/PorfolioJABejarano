@@ -9,6 +9,7 @@ import Python from "./icons/Python.astro";
 import CLI from "./icons/CLI.astro";
 import Vue from "./icons/Vue.astro";
 import SQL from "./icons/SQL.astro";
+import Streamlit from "./icons/Streamlit.astro";
 
 const TAGS = {
   SPRING: {
@@ -51,6 +52,11 @@ const TAGS = {
     class: "bg-[#00618A]/25 text-white ring-1 ring-[#00618A]/30",
     icon: SQL,
   },
+  STREAMLIT: {
+    name: "Streamlit",
+    class: "bg-[#ff4b4b] text-white",
+    icon: Streamlit,
+  },
 };
 
 const PROJECTS = [
@@ -62,6 +68,15 @@ const PROJECTS = [
     github: "https://github.com/JABejaranoVela/SocialMediaDashboard",
     image: "/projects/socialMediaDashboard.png",
     tags: [TAGS.SPRING, TAGS.VUE, TAGS.JAVA, TAGS.SQL],
+  },
+  {
+    title: "CV Job Matcher - con Python",
+    description:
+      "CV Job Matcher es una aplicación web hecha con Python y Streamlit que te permite subir tu currículum en PDF y, automáticamente, identificar las tecnologías y habilidades que aparecen (por ejemplo: Java, Spring Boot, Python, Docker, etc.).Con esa información, la app busca ofertas reales en España usando la API de Adzuna y te muestra un listado ordenado de las que mejor encajan contigo, indicando de forma clara qué coincide con tu perfil y qué habilidades te faltan para cada oferta.",
+    preview: "https://jabejarano-cv-job-matcher.streamlit.app/",
+    github: "https://github.com/JABejaranoVela/CV-job-matcher",
+    image: "/projects/cvJobMartcher.png",
+    tags: [TAGS.PYTHON, TAGS.STREAMLIT, TAGS.SQL],
   },
   {
     title: "Task-Track - Python",
