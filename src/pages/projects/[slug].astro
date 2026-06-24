@@ -1,0 +1,169 @@
+---
+import Layout from "@/layouts/Layout.astro"
+import ProjectTechBadge from "@/components/ProjectTechBadge.astro"
+import { projects, type Project } from "@/data/projects"
+
+export function getStaticPaths() {
+  return projects.map((project) => ({
+    params: { slug: project.slug },
+    props: { project },
+  }))
+}
+
+interface Props {
+  project: Project
+}
+
+const { project } = Astro.props
+const pageTitle = `${project.title} - Proyecto de José Antonio Bejarano`
+const pageDescription = project.shortDescription
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <main class="px-4 pt-32">
+    <article class="mx-auto w-full max-w-4xl">
+      <a
+        href="/#proyectos"
+        class="inline-flex items-center rounded-full border border-gray-300 bg-gray-100 px-4 py-2 text-sm font-medium text-gray-800 transition hover:bg-gray-900 hover:text-white dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-100 dark:hover:text-black"
+      >
+        Volver a proyectos
+      </a>
+
+      <header class="mt-10">
+        <p class="text-sm font-medium uppercase tracking-[0.2em] text-yellow-500">
+          Proyecto
+        </p>
+        <h1 class="mt-3 text-4xl font-bold tracking-tight text-gray-900 dark:text-white md:text-5xl">
+          {project.title}
+        </h1>
+        <p class="mt-6 max-w-3xl text-lg leading-8 text-gray-700 dark:text-gray-300">
+          {project.description}
+        </p>
+
+        <div class="mt-8 flex flex-wrap gap-3">
+          {
+            project.githubUrl && (
+              <a
+                href={project.githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center rounded-xl border border-gray-300 bg-gray-100 px-4 py-2 text-base font-medium text-gray-800 transition hover:bg-gray-900 hover:text-white dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-100 dark:hover:text-black"
+              >
+                GitHub
+              </a>
+            )
+          }
+          {
+            project.demoUrl && (
+              <a
+                href={project.demoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center rounded-xl border border-yellow-500 bg-yellow-400 px-4 py-2 text-base font-medium text-gray-950 transition hover:bg-yellow-300"
+              >
+                Ver demo
+              </a>
+            )
+          }
+        </div>
+      </header>
+
+      {
+        project.image && (
+          <figure class="mt-12 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl dark:border-gray-800 dark:bg-gray-900">
+            <img
+              src={project.image}
+              alt={`Captura de ${project.title}`}
+              class="h-auto w-full object-cover"
+              loading="eager"
+            />
+          </figure>
+        )
+      }
+
+      <div class="mt-14 grid gap-10">
+        {
+          project.problem && (
+            <section>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                Problema que resuelve
+              </h2>
+              <p class="mt-4 leading-7 text-gray-700 dark:text-gray-300">
+                {project.problem}
+              </p>
+            </section>
+          )
+        }
+
+        {
+          project.goal && (
+            <section>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                Objetivo
+              </h2>
+              <p class="mt-4 leading-7 text-gray-700 dark:text-gray-300">
+                {project.goal}
+              </p>
+            </section>
+          )
+        }
+
+        <section>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+            Stack técnico
+          </h2>
+          <div class="mt-4 flex flex-wrap gap-2">
+            {project.technologies.map((technology) => <ProjectTechBadge label={technology} />)}
+          </div>
+        </section>
+
+        {
+          project.features.length > 0 && (
+            <section>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                Funcionalidades principales
+              </h2>
+              <ul class="mt-4 grid gap-3 text-gray-700 dark:text-gray-300">
+                {project.features.map((feature) => (
+                  <li class="rounded-xl border border-gray-200 bg-white/60 p-4 dark:border-gray-800 dark:bg-gray-900/60">
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+
+        {
+          project.technicalHighlights.length > 0 && (
+            <section>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                Decisiones técnicas destacadas
+              </h2>
+              <ul class="mt-4 grid gap-3 text-gray-700 dark:text-gray-300">
+                {project.technicalHighlights.map((highlight) => (
+                  <li class="rounded-xl border border-gray-200 bg-white/60 p-4 dark:border-gray-800 dark:bg-gray-900/60">
+                    {highlight}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+
+        {
+          project.learned && (
+            <section>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                Qué aprendí o qué demuestra
+              </h2>
+              <p class="mt-4 leading-7 text-gray-700 dark:text-gray-300">
+                {project.learned}
+              </p>
+            </section>
+          )
+        }
+      </div>
+    </article>
+  </main>
+</Layout>

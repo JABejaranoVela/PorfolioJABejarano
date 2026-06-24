@@ -1,0 +1,144 @@
+---
+import CLI from "@/components/icons/CLI.astro"
+import Angular from "@/components/icons/Angular.astro"
+import Code from "@/components/icons/Code.astro"
+import FastAPI from "@/components/icons/FastAPI.astro"
+import GitHub from "@/components/icons/GitHub.astro"
+import Java from "@/components/icons/Java.astro"
+import Python from "@/components/icons/Python.astro"
+import Spring from "@/components/icons/Spring.astro"
+import SQL from "@/components/icons/SQL.astro"
+import Streamlit from "@/components/icons/Streamlit.astro"
+import System from "@/components/icons/System.astro"
+import Vue from "@/components/icons/Vue.astro"
+
+interface Props {
+  label: string
+}
+
+const { label } = Astro.props
+
+const TECH_BADGES = {
+  "Python": {
+    class: "bg-[#306998] text-white ring-[#306998]/40",
+    icon: Python,
+  },
+  "FastAPI": {
+    class: "bg-[#009688] text-white ring-[#009688]/40",
+    icon: FastAPI,
+  },
+  "Angular": {
+    class: "bg-[#dd0031] text-white ring-[#dd0031]/40",
+    icon: Angular,
+  },
+  "Angular 20": {
+    class: "bg-[#dd0031] text-white ring-[#dd0031]/40",
+    icon: Angular,
+  },
+  "TypeScript": {
+    class: "bg-[#3178c6] text-white ring-[#3178c6]/40",
+    icon: Code,
+  },
+  "SCSS": {
+    class: "bg-[#cf649a] text-white ring-[#cf649a]/40",
+    icon: Code,
+  },
+  "Spring Boot": {
+    class: "bg-[#6db33f] text-white ring-[#6db33f]/40",
+    icon: Spring,
+  },
+  "Java": {
+    class: "bg-[#ea2d2e] text-white ring-[#ea2d2e]/40",
+    icon: Java,
+  },
+  "Vue": {
+    class: "bg-[#003159] text-white ring-[#003159]/40",
+    icon: Vue,
+  },
+  "MySQL": {
+    class: "bg-[#00618a] text-white ring-[#00618a]/40",
+    icon: SQL,
+  },
+  "PostgreSQL": {
+    class: "bg-[#336791] text-white ring-[#336791]/40",
+    icon: SQL,
+  },
+  "PostgreSQL 16": {
+    class: "bg-[#336791] text-white ring-[#336791]/40",
+    icon: SQL,
+  },
+  "pgvector": {
+    class: "bg-[#4f46e5] text-white ring-[#4f46e5]/40",
+    icon: SQL,
+  },
+  "Docker": {
+    class: "bg-[#2496ed] text-white ring-[#2496ed]/40",
+    icon: System,
+  },
+  "Docker Compose": {
+    class: "bg-[#1d63ed] text-white ring-[#1d63ed]/40",
+    icon: System,
+  },
+  "Nginx": {
+    class: "bg-[#009639] text-white ring-[#009639]/40",
+    icon: System,
+  },
+  "Streamlit": {
+    class: "bg-[#ff4b4b] text-white ring-[#ff4b4b]/40",
+    icon: Streamlit,
+  },
+  "SQLAlchemy": {
+    class: "bg-[#b22122] text-white ring-[#b22122]/40",
+    icon: SQL,
+  },
+  "Alembic": {
+    class: "bg-[#6b7280] text-white ring-[#6b7280]/40",
+    icon: SQL,
+  },
+  "spaCy": {
+    class: "bg-[#09a3d5] text-white ring-[#09a3d5]/40",
+    icon: Code,
+  },
+  "PyMuPDF": {
+    class: "bg-[#f97316] text-white ring-[#f97316]/40",
+    icon: Code,
+  },
+  "sentence-transformers": {
+    class: "bg-[#7c3aed] text-white ring-[#7c3aed]/40",
+    icon: Code,
+  },
+  "GitHub API": {
+    class: "bg-[#24292e] text-white ring-[#24292e]/40",
+    icon: GitHub,
+  },
+  "CLI": {
+    class: "bg-gray-700 text-white ring-gray-700/40",
+    icon: CLI,
+  },
+  "JPA/Hibernate": {
+    class: "bg-[#59666c] text-white ring-[#59666c]/40",
+    icon: SQL,
+  },
+  "JWT": {
+    class: "bg-[#111827] text-white ring-[#111827]/40",
+    icon: System,
+  },
+  "Adzuna API": {
+    class: "bg-[#7c2d12] text-white ring-[#7c2d12]/40",
+    icon: Code,
+  },
+} as const
+
+const badge = TECH_BADGES[label as keyof typeof TECH_BADGES] ?? {
+  class: "bg-gray-700 text-white ring-gray-700/40",
+  icon: Code,
+}
+const Icon = badge.icon
+---
+
+<span
+  class={`inline-flex max-w-full items-center gap-x-1.5 rounded-full px-2.5 py-1 text-xs font-medium leading-tight ring-1 ${badge.class}`}
+>
+  <Icon class="size-4 shrink-0" />
+  <span class="min-w-0 break-words">{label}</span>
+</span>

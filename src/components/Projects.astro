@@ -1,153 +1,67 @@
 ---
-import GitHub from "./icons/GitHub.astro";
-import Tailwind from "./icons/Tailwind.astro";
-import Link from "./icons/Link.astro";
-import LinkButton from "./LinkButton.astro";
-import Java from "./icons/Java.astro";
-import Spring from "./icons/Spring.astro";
-import Python from "./icons/Python.astro";
-import CLI from "./icons/CLI.astro";
-import Vue from "./icons/Vue.astro";
-import SQL from "./icons/SQL.astro";
-import Streamlit from "./icons/Streamlit.astro";
-
-const TAGS = {
-  SPRING: {
-    name: "Spring Boot",
-    class: "bg-black text-white",
-    icon: Spring,
-  },
-  VUE: {
-    name: "Vue",
-    class: "bg-[#003159] text-white",
-    icon: Vue,
-  },
-  PYTHON: {
-    name: "Python",
-    class: "bg-[#306998] text-white",
-    icon: Python,
-  },
-  CLI: {
-    name: "CLI",
-    class: "bg-gray-700 text-white",
-    icon: CLI,
-  },
-  JAVA: {
-    name: "Java",
-    class: "bg-[#EA2D2E]/20 text-white ring-1 ring-[#EA2D2E]/30",
-    icon: Java,
-  },
-  MAVEN: {
-    name: "Maven",
-    class: "bg-[#c71a36] text-white",
-    icon: Tailwind,
-  },
-  GITHUB_API: {
-    name: "GitHub API",
-    class: "bg-[#24292e] text-white",
-    icon: GitHub,
-  },
-  SQL: {
-    name: "MySQL",
-    class: "bg-[#00618A]/25 text-white ring-1 ring-[#00618A]/30",
-    icon: SQL,
-  },
-  STREAMLIT: {
-    name: "Streamlit",
-    class: "bg-[#ff4b4b] text-white",
-    icon: Streamlit,
-  },
-};
-
-const PROJECTS = [
-  {
-    title: "Social Media Dashboard - con Java",
-    description:
-      "Dashboard analítico en producción para explorar, a partir de datos de encuesta, la relación entre uso de redes sociales y métricas de salud mental con KPIs, gráficas interactivas y filtros avanzados. Backend en Java/Spring Boot con API REST, autenticación JWT y persistencia relacional (JPA/Hibernate), aplicando control de acceso y operaciones CRUD “user-scoped” (datos aislados por usuario y rutas protegidas). Arquitectura desacoplada desplegada por capas: SPA en Vue (Vite) + CoreUI en Netlify, backend en Render y base de datos en TiDB Cloud.",
-    preview: "https://jabejaranosocialmediadashboard.netlify.app/",
-    github: "https://github.com/JABejaranoVela/SocialMediaDashboard",
-    image: "/projects/socialMediaDashboard.png",
-    tags: [TAGS.SPRING, TAGS.VUE, TAGS.JAVA, TAGS.SQL],
-  },
-  {
-    title: "CV Job Matcher - con Python",
-    description:
-      "CV Job Matcher es una aplicación web hecha con Python y Streamlit que te permite subir tu currículum en PDF y, automáticamente, identificar las tecnologías y habilidades que aparecen (por ejemplo: Java, Spring Boot, Python, Docker, etc.).Con esa información, la app busca ofertas reales en España usando la API de Adzuna y te muestra un listado ordenado de las que mejor encajan contigo, indicando de forma clara qué coincide con tu perfil y qué habilidades te faltan para cada oferta.",
-    preview: "https://jabejarano-cv-job-matcher.streamlit.app/",
-    github: "https://github.com/JABejaranoVela/CV-job-matcher",
-    image: "/projects/cvJobMartcher.png",
-    tags: [TAGS.PYTHON, TAGS.STREAMLIT, TAGS.SQL],
-  },
-  {
-    title: "Task-Track - Python",
-    description:
-      "CLI en Python para gestionar tareas desde terminal con operaciones CRUD y cambio de estado (todo / in-progress / done). Incluye listados completos y filtrados por estado, con persistencia en JSON para mantener los datos entre ejecuciones. Registra timestamps y gestiona errores como IDs inexistentes con mensajes claros, además de un flujo de pruebas manuales sobre un JSON separado.",
-    github: "https://github.com/JABejaranoVela/Task-Track",
-    image: "/projects/task-cli-demo.gif",
-    tags: [TAGS.PYTHON, TAGS.CLI],
-  },
-  {
-    title: "GitHub Activity CLI - Java",
-    description:
-      "CLI en Java que obtiene y resume la actividad pública de un usuario en GitHub (Push, Issues, Stars, Forks, etc.) consumiendo la GitHub REST API. Procesa y normaliza los eventos para mostrarlos en consola con mensajes claros y legibles, gestionando respuestas vacías y errores de red/API. Implementa cliente HTTP nativo y parsing de JSON para un flujo eficiente y portable sin dependencias pesadas.",
-    github: "https://github.com/JABejaranoVela/GitHubActivityCLI",
-    image: "/projects/github-activity-cli-demo.gif",
-    tags: [TAGS.JAVA, TAGS.GITHUB_API, TAGS.CLI],
-  },
-];
+import ProjectTechBadge from "@/components/ProjectTechBadge.astro"
+import { projects } from "@/data/projects"
 ---
 
-<div class="flex flex-col gap-y-16">
+<div class="grid gap-8">
   {
-    PROJECTS.map(({ image, title, description, tags, preview, github }) => (
-      <article class="flex flex-col space-x-0 space-y-8 group md:flex-row md:space-x-8 md:space-y-0">
-        <div class="w-full md:w-1/2">
-          <div class="relative flex flex-col items-center col-span-6 row-span-5 gap-8 transition duration-500 ease-in-out transform shadow-xl overflow-clip rounded-xl sm:rounded-xl md:group-hover:-translate-y-1 md:group-hover:shadow-2xl lg:border lg:border-gray-800 lg:hover:border-gray-700 lg:hover:bg-gray-800/50">
+    projects.map((project) => (
+      <article class="group grid gap-6 rounded-2xl border border-gray-200 bg-white/60 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900/50 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:p-6">
+        {project.image && (
+          <div class="overflow-hidden rounded-xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-950">
             <img
-              alt="Proyectos Jose Antonio Bejarano Vela"
-              class="object-cover object-top w-full h-56 transition duration-500 md:scale-110 md:group-hover:scale-105"
+              alt={`Captura de ${project.title}`}
+              class="h-56 w-full object-cover object-top transition duration-500 md:group-hover:scale-105"
               loading="lazy"
-              src={image}
+              src={project.image}
             />
           </div>
-        </div>
+        )}
 
-        <div class="w-full md:w-1/2 md:max-w-lg">
-          <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
-            {title}
+        <div class="flex flex-col">
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {project.title}
           </h3>
-          <div class="flex flex-wrap mt-2">
-            <ul class="flex flex-row mb-2 gap-x-2">
-              {tags.map((tag) => (
-                <li>
-                  <span
-                    class={`flex gap-x-2 rounded-full text-xs ${tag.class} py-1 px-2 `}
-                  >
-                    <tag.icon class="size-4" />
-                    {tag.name}
-                  </span>
-                </li>
-              ))}
-            </ul>
 
-            <div class="mt-2 text-gray-700 dark:text-gray-400">
-              {description}
-            </div>
-            <footer class="flex items-end justify-start mt-4 gap-x-4">
-              {github && (
-                <LinkButton href={github}>
-                  <GitHub class="size-6" />
-                  Code
-                </LinkButton>
-              )}
-              {preview && (
-                <LinkButton href={preview}>
-                  <Link class="size-4" />
-                  Preview
-                </LinkButton>
-              )}
-            </footer>
+          <div class="mt-3 flex flex-wrap gap-2">
+            {project.mainTechnologies.map((technology) => (
+              <ProjectTechBadge label={technology} />
+            ))}
           </div>
+
+          <p class="mt-4 line-clamp-5 text-pretty leading-7 text-gray-700 dark:text-gray-400">
+            {project.shortDescription}
+          </p>
+
+          <footer class="mt-6 flex flex-wrap gap-3">
+            <a
+              href={`/projects/${project.slug}`}
+              class="inline-flex items-center rounded-xl border border-gray-300 bg-gray-100 px-4 py-2 text-base font-medium text-gray-800 transition hover:bg-gray-900 hover:text-white dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-100 dark:hover:text-black"
+            >
+              Ver detalles
+            </a>
+            {project.demoUrl ? (
+              <a
+                href={project.demoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center rounded-xl border border-yellow-500 bg-yellow-400 px-4 py-2 text-base font-medium text-gray-950 transition hover:bg-yellow-300"
+              >
+                Ver demo
+              </a>
+            ) : (
+              project.githubUrl && (
+                <a
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center rounded-xl border border-gray-300 bg-gray-100 px-4 py-2 text-base font-medium text-gray-800 transition hover:bg-gray-900 hover:text-white dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-100 dark:hover:text-black"
+                >
+                  GitHub
+                </a>
+              )
+            )}
+          </footer>
         </div>
       </article>
     ))
