@@ -102,34 +102,4 @@ export const projects: Project[] = [
     demoUrl: "https://jabejaranosocialmediadashboard.netlify.app/",
     githubUrl: "https://github.com/JABejaranoVela/SocialMediaDashboard",
   },
-  {
-    slug: "cv-job-matcher",
-    title: "CV Job Matcher",
-    shortDescription:
-      "Aplicación en Python y Streamlit que analiza un currículum en PDF y muestra ofertas ordenadas según las habilidades detectadas.",
-    description:
-      "CV Job Matcher es una aplicación web hecha con Python y Streamlit que permite subir un currículum en PDF, identificar tecnologías y habilidades, buscar ofertas reales en España usando la API de Adzuna y mostrar un listado ordenado de las que mejor encajan con el perfil.",
-    problem:
-      "Comparar manualmente un CV con ofertas de empleo consume tiempo y dificulta ver qué habilidades coinciden y cuáles faltan.",
-    goal:
-      "Automatizar una primera lectura del CV y presentar ofertas priorizadas con información clara sobre coincidencias y carencias.",
-    technologies: ["Python", "Streamlit", "Adzuna API"],
-    mainTechnologies: ["Python", "Streamlit"],
-    features: [
-      "Subida de CV en PDF.",
-      "Detección automática de tecnologías y habilidades.",
-      "Búsqueda de ofertas reales en España mediante API.",
-      "Ordenación de ofertas según encaje con el perfil.",
-      "Visualización de coincidencias y habilidades faltantes.",
-    ],
-    technicalHighlights: [
-      "Procesamiento de texto de CV para extraer habilidades técnicas.",
-      "Integración con una API externa de ofertas.",
-    ],
-    learned:
-      "El proyecto demuestra una primera aproximación práctica a matching entre CV y ofertas con Python y una interfaz rápida en Streamlit.",
-    image: "/projects/cvJobMartcher.png",
-    demoUrl: "https://jabejarano-cv-job-matcher.streamlit.app/",
-    githubUrl: "https://github.com/JABejaranoVela/CV-job-matcher",
-  },
 ]
