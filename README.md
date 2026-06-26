@@ -197,6 +197,14 @@ npm run preview
 
 El comando `npm run build` ejecuta `astro check` y después genera la build estática en `dist/`.
 
+## Despliegue en producción
+
+El portfolio está desplegado en un VPS de Hostinger con Ubuntu 24.04 LTS y Nginx. Está disponible públicamente en [https://jabejarano.tech](https://jabejarano.tech), y Nginx sirve el contenido estático generado desde `/var/www/PorfolioJABejarano/dist`.
+
+El despliegue se automatiza mediante GitHub Actions, que se conecta al VPS por SSH, actualiza la rama `main`, instala las dependencias y genera una nueva build.
+
+La configuración y el procedimiento operativo completo están documentados en [Despliegue del portfolio en un VPS Ubuntu](docs/deployment-vps.md).
+
 ## Verificación
 
 Verificación realizada mediante build:
