@@ -1,6 +1,6 @@
 # Despliegue del portfolio en un VPS Ubuntu
 
-Esta guía documenta el despliegue del portfolio de Jose Antonio Bejarano Vela en un VPS de Hostinger. El proyecto es un frontend estático generado con Astro y servido por Nginx.
+Esta guía documenta el despliegue del portfolio de Jose Antonio Bejarano Vela en un VPS de Hostinger. Astro se compila en GitHub Actions y el VPS recibe únicamente los archivos estáticos generados.
 
 ## Datos del entorno
 
@@ -11,142 +11,137 @@ Esta guía documenta el despliegue del portfolio de Jose Antonio Bejarano Vela e
 | Usuario de despliegue | `deploy` |
 | Dominio principal | `jabejarano.tech` |
 | Dominio alternativo | `www.jabejarano.tech` |
-| Repositorio en el VPS | `/var/www/PorfolioJABejarano` |
-| Salida estática | `/var/www/PorfolioJABejarano/dist` |
+| Directorio base | `/var/www/PorfolioJABejarano` |
+| Release activa | `/var/www/PorfolioJABejarano/current` |
+| Contenido servido | `/var/www/PorfolioJABejarano/current/dist` |
 | Servidor web | Nginx |
 | HTTPS | Certbot y Let's Encrypt |
-| Despliegue automático | GitHub Actions mediante SSH |
 
-## Arquitectura del despliegue
+## Arquitectura
 
 ```text
-Push a main en GitHub
-        |
-        v
-GitHub Actions
-        |
-        | SSH con una clave específica
-        v
+Push a main
+    |
+    v
+GitHub Actions (Node 22)
+    |
+    | npm ci -> npm run build -> dist/release.json
+    | empaquetado, checksum y SCP
+    v
 VPS Ubuntu (usuario deploy)
-        |
-        | git fetch + git reset + npm install + npm run build
-        v
-/var/www/PorfolioJABejarano/dist
-        |
-        v
-Nginx + HTTPS
-        |
-        v
+    |
+    | releases/<release_id>/dist
+    | cambio atómico del symlink current
+    v
+Nginx -> current/dist
+    |
+    v
 https://jabejarano.tech
 ```
 
-Nginx no ejecuta un servidor Node.js. Astro genera archivos estáticos en `dist` y Nginx los entrega directamente.
+El VPS no ejecuta `git fetch`, `git reset`, `npm install` ni `npm run build`. Tampoco necesita reiniciar Nginx en cada despliegue, porque la ruta pública `current/dist` permanece estable.
 
-## Estructura final en el VPS
+## Build reproducible
+
+El repositorio fija Node 22 en `.nvmrc`. GitHub Actions usa ese archivo con `actions/setup-node`, por lo que todos los builds se ejecutan con la misma versión principal de Node.
+
+`package-lock.json` está versionado y el workflow instala dependencias con:
+
+```bash
+npm ci
+npm run build
+test -f dist/index.html
+```
+
+`npm ci` instala exactamente las versiones del lockfile y falla si `package.json` y `package-lock.json` no están sincronizados.
+
+## Estructura del VPS
 
 ```text
 /var/www/PorfolioJABejarano/
-├── .git/
-├── .github/
-├── public/
-├── src/
-├── dist/                  # Salida generada por npm run build
-├── package.json
-├── package-lock.json      # Si está disponible en el repositorio
-└── astro.config.mjs
+|-- releases/
+|   |-- 20260627_120000_1a2b3c4/
+|   |   `-- dist/
+|   |-- 20260627_123000_5d6e7f8/
+|   |   `-- dist/
+|   `-- bootstrap_20260627_110000/
+|       `-- dist/
+`-- current -> /var/www/PorfolioJABejarano/releases/20260627_123000_5d6e7f8
 ```
 
-Comprobaciones básicas:
-
-```bash
-cd /var/www/PorfolioJABejarano
-git status
-git branch --show-current
-ls -la
-ls -la dist
-```
-
-## Usuario de despliegue
-
-El despliegue se ejecuta con el usuario Linux `deploy`, no con `root`. Una configuración reproducible es:
-
-```bash
-sudo adduser deploy
-sudo mkdir -p /home/deploy/.ssh
-sudo touch /home/deploy/.ssh/authorized_keys
-sudo chown -R deploy:deploy /home/deploy/.ssh
-sudo chmod 700 /home/deploy/.ssh
-sudo chmod 600 /home/deploy/.ssh/authorized_keys
-```
-
-El usuario debe tener permisos de lectura y escritura sobre el repositorio:
-
-```bash
-sudo mkdir -p /var/www/PorfolioJABejarano
-sudo chown -R deploy:deploy /var/www/PorfolioJABejarano
-```
-
-La clave SSH específica para GitHub Actions se generó en Windows en:
+Cada release normal usa el formato:
 
 ```text
-C:\Users\josea\.ssh\jabejarano_actions_ed25519
+YYYYMMDD_HHMMSS_<sha-corto>
 ```
 
-Su clave pública se añadió a:
+El directorio `current` es un symlink a la release publicada.
+
+## Usuario `deploy` y permisos
+
+El usuario `deploy` debe poder crear releases y actualizar los symlinks sin usar `sudo`:
+
+```bash
+sudo mkdir -p /var/www/PorfolioJABejarano/releases
+sudo chown -R deploy:deploy /var/www/PorfolioJABejarano
+sudo chmod 755 /var/www/PorfolioJABejarano
+```
+
+La clave pública usada por GitHub Actions está autorizada en:
 
 ```text
 /home/deploy/.ssh/authorized_keys
 ```
 
-La clave privada no debe copiarse al repositorio, imprimirse en logs ni compartirse. GitHub almacena su contenido en el secret `VPS_SSH_KEY`.
-
-Para comprobar los permisos SSH en el VPS:
+Permisos recomendados:
 
 ```bash
-ls -ld /home/deploy/.ssh
-ls -l /home/deploy/.ssh/authorized_keys
+sudo chown -R deploy:deploy /home/deploy/.ssh
+sudo chmod 700 /home/deploy/.ssh
+sudo chmod 600 /home/deploy/.ssh/authorized_keys
 ```
 
-## Preparación del proyecto
+La clave privada se conserva exclusivamente en GitHub como `VPS_SSH_KEY`. Nunca debe añadirse al repositorio ni mostrarse en logs.
 
-Con Git, Node.js y npm instalados en el VPS, el repositorio debe quedar en la ruta usada por el workflow:
+## Migración inicial sin cambiar el contenido publicado
 
-```bash
-sudo -u deploy git clone \
-  https://github.com/JABejaranoVela/PorfolioJABejarano.git \
-  /var/www/PorfolioJABejarano
-```
-
-Primera instalación y build:
+Antes de cambiar Nginx, se debe convertir el `dist` actual en una release bootstrap. Ejecutar como `deploy`:
 
 ```bash
-sudo -iu deploy
 cd /var/www/PorfolioJABejarano
-npm install
-npm run build
-exit
+mkdir -p releases
+RELEASE_ID="bootstrap_$(date -u +%Y%m%d_%H%M%S)"
+mkdir -p "releases/$RELEASE_ID"
+cp -a dist "releases/$RELEASE_ID/dist"
+ln -sfn "/var/www/PorfolioJABejarano/releases/$RELEASE_ID" current.next
+mv -Tf current.next current
+test -f current/dist/index.html
 ```
 
-Antes de automatizar el despliegue conviene comprobar:
+Comprobar el resultado:
 
 ```bash
-node --version
-npm --version
-test -f /var/www/PorfolioJABejarano/dist/index.html
+readlink -f current
+ls -lah current/dist/index.html
 ```
+
+Esta release permite cambiar Nginx sin alterar todavía los archivos servidos.
 
 ## Configuración de Nginx
 
-La configuración exacta puede variar si Certbot ya la ha modificado. Este bloque representa la configuración HTTP mínima equivalente para el portfolio:
+Localizar primero el bloque activo:
+
+```bash
+sudo nginx -T | grep -n -A 20 -B 5 "server_name jabejarano.tech"
+```
+
+En los bloques que sirven `jabejarano.tech` y `www.jabejarano.tech`, cambiar únicamente el `root`:
 
 ```nginx
 server {
-    listen 80;
-    listen [::]:80;
-
     server_name jabejarano.tech www.jabejarano.tech;
 
-    root /var/www/PorfolioJABejarano/dist;
+    root /var/www/PorfolioJABejarano/current/dist;
     index index.html;
 
     location / {
@@ -155,52 +150,31 @@ server {
 }
 ```
 
-Puede guardarse como:
+Certbot puede mantener directivas adicionales de HTTP, HTTPS y certificados. No deben eliminarse al cambiar el `root`.
 
-```text
-/etc/nginx/sites-available/jabejarano.tech
-```
-
-Activación y validación:
+Validar y recargar:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/jabejarano.tech \
-  /etc/nginx/sites-enabled/jabejarano.tech
 sudo nginx -t
 sudo systemctl reload nginx
 sudo systemctl status nginx --no-pager
+curl -I https://jabejarano.tech
 ```
 
-No se debe recargar Nginx si `sudo nginx -t` devuelve un error.
+No se debe ejecutar `reload` si `nginx -t` devuelve un error.
 
-## DNS
+## HTTPS y renovación
 
-Los registros DNS de ambos dominios deben resolver a la IP pública del VPS:
-
-```text
-jabejarano.tech      -> 72.62.235.87
-www.jabejarano.tech  -> 72.62.235.87
-```
-
-Comprobación desde cualquier equipo con `dig`:
+El certificado cubre los dos dominios y está gestionado por Certbot:
 
 ```bash
-dig +short jabejarano.tech
-dig +short www.jabejarano.tech
+sudo certbot certificates
+sudo systemctl status certbot.timer
+sudo systemctl list-timers | grep certbot
+sudo certbot renew --dry-run
 ```
 
-La propagación DNS puede tardar. Certbot debe ejecutarse después de que ambos nombres resuelvan correctamente al VPS.
-
-## HTTPS con Certbot
-
-Instalación de Certbot y su integración con Nginx:
-
-```bash
-sudo apt update
-sudo apt install certbot python3-certbot-nginx
-```
-
-Emisión del certificado para los dos dominios:
+Si hubiera que emitirlo de nuevo:
 
 ```bash
 sudo certbot --nginx \
@@ -208,247 +182,243 @@ sudo certbot --nginx \
   -d www.jabejarano.tech
 ```
 
-Certbot valida los dominios, obtiene el certificado de Let's Encrypt y ajusta Nginx para servir HTTPS. Después se debe validar la configuración:
-
-```bash
-sudo nginx -t
-sudo systemctl reload nginx
-sudo certbot certificates
-```
-
-### Renovación automática
-
-Ubuntu instala normalmente un timer de systemd para renovar certificados. Se puede comprobar con:
-
-```bash
-sudo systemctl status certbot.timer
-sudo systemctl list-timers | grep certbot
-sudo certbot renew --dry-run
-```
-
-El `dry-run` verifica la renovación sin reemplazar el certificado vigente.
-
 ## Firewall UFW
 
-El firewall permite únicamente SSH y el perfil completo de Nginx, que abre HTTP y HTTPS:
+El firewall permite únicamente SSH y el perfil HTTP/HTTPS de Nginx:
 
 ```bash
 sudo ufw allow OpenSSH
 sudo ufw allow 'Nginx Full'
-sudo ufw enable
 sudo ufw status verbose
 ```
 
-Es importante permitir `OpenSSH` antes de activar UFW para no perder el acceso remoto.
+`OpenSSH` debe estar permitido antes de activar UFW.
 
-## Despliegue automático con GitHub Actions
+## Secrets de GitHub Actions
 
-El workflow está definido en `.github/workflows/deploy.yml`. Se ejecuta:
-
-- automáticamente con cada push a `main`;
-- manualmente mediante `workflow_dispatch`.
-
-### Secrets necesarios
-
-En GitHub, dentro de **Settings > Secrets and variables > Actions**, están configurados:
+Configurar en **Settings > Secrets and variables > Actions**:
 
 | Secret | Contenido esperado |
 | --- | --- |
-| `VPS_HOST` | IP o hostname del VPS, actualmente `72.62.235.87` |
-| `VPS_USER` | Usuario SSH, actualmente `deploy` |
-| `VPS_SSH_KEY` | Contenido completo de la clave privada específica de GitHub Actions |
+| `VPS_HOST` | Host o IP del VPS |
+| `VPS_USER` | Usuario `deploy` |
+| `VPS_SSH_KEY` | Clave privada específica para GitHub Actions |
+| `VPS_KNOWN_HOSTS` | Línea verificada de `known_hosts` para el VPS |
 
-No se deben guardar los valores de estos secrets en archivos versionados.
+No se debe guardar ningún valor real en archivos versionados.
 
-### Flujo del workflow
+### Verificar la clave del host SSH
 
-GitHub Actions:
-
-1. Crea `~/.ssh` en el runner.
-2. Escribe temporalmente `VPS_SSH_KEY` con permisos `600`.
-3. Añade el servidor a `known_hosts` mediante `ssh-keyscan`.
-4. Se conecta al VPS como `deploy`.
-5. Ejecuta:
+Obtener la huella directamente desde el VPS mediante una sesión confiable:
 
 ```bash
-set -e
-cd /var/www/PorfolioJABejarano
-git fetch origin main
-git reset --hard origin/main
-npm install
-npm run build
+sudo ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
 ```
 
-`set -e` detiene el despliegue si falla cualquier comando. Nginx sirve el directorio `dist`, por lo que no necesita reiniciarse cuando solo cambia el contenido estático.
+Desde un equipo local se puede obtener la línea candidata:
 
-## Comprobar el despliegue
+```bash
+ssh-keyscan -H 72.62.235.87
+```
 
-Desde el VPS:
+Antes de usarla, su huella debe coincidir con la mostrada directamente por el VPS. Una vez verificada, guardar la línea completa como secret `VPS_KNOWN_HOSTS`.
+
+El workflow escribe este secret en `~/.ssh/known_hosts`. No ejecuta `ssh-keyscan` durante el despliegue, evitando confiar automáticamente en una clave recibida en ese momento.
+
+## Flujo del workflow de despliegue
+
+`.github/workflows/deploy.yml` se ejecuta con cada push a `main` y manualmente mediante `workflow_dispatch`.
+
+1. Descarga el repositorio con `actions/checkout`.
+2. Configura Node 22 desde `.nvmrc`.
+3. Ejecuta `npm ci` y `npm run build`.
+4. Comprueba `dist/index.html`.
+5. Genera `dist/release.json`:
+
+   ```json
+   {
+     "release": "20260627_123000_5d6e7f8",
+     "sha": "5d6e7f8...",
+     "deployed_at": "2026-06-27T12:30:00Z"
+   }
+   ```
+
+6. Empaqueta `dist`, genera un checksum SHA-256 y sube ambos archivos a `/tmp`.
+7. Verifica el checksum y extrae en una carpeta nueva de `releases`.
+8. Comprueba `index.html` y `release.json` antes de publicar.
+9. Cambia `current` mediante `current.next` y `mv -Tf`.
+10. Comprueba la home y descarga `/release.json` por HTTPS.
+11. Verifica que el JSON publicado contiene el `GITHUB_SHA` esperado.
+12. Solo tras superar el health check elimina releases antiguas.
+
+La concurrencia usa:
+
+```yaml
+concurrency:
+  group: portfolio-production
+  cancel-in-progress: false
+```
+
+Así, un despliegue en ejecución no se interrumpe durante la activación del symlink.
+
+## Verificar la release activa
+
+En el VPS:
 
 ```bash
 cd /var/www/PorfolioJABejarano
-git rev-parse --short HEAD
-git status
-ls -lah dist
-test -f dist/index.html && echo "Build disponible"
-sudo nginx -t
-sudo systemctl is-active nginx
+readlink -f current
+test -f current/dist/index.html
+cat current/dist/release.json
 ```
 
 Desde otro equipo:
 
 ```bash
-curl -I https://jabejarano.tech
-curl -I https://www.jabejarano.tech
+curl --fail --location --head https://jabejarano.tech
+curl --fail --location https://jabejarano.tech/release.json
 ```
 
-También se deben abrir en un navegador:
+El campo `sha` de la respuesta debe coincidir con el commit desplegado por GitHub Actions.
 
-- `https://jabejarano.tech`
-- `https://www.jabejarano.tech`
-- `https://jabejarano.tech/projects/skillmatch-ai`
-- `https://jabejarano.tech/projects/social-media-dashboard`
+## Retención de releases
 
-## Logs de Nginx
+Después de un despliegue correcto se conservan las cinco releases más recientes. La limpieza:
 
-Últimos accesos:
+- se ejecuta únicamente después del health check;
+- opera solo dentro de `releases/`;
+- nunca elimina el destino actual de `current`;
+- puede conservar una sexta carpeta si se ha hecho rollback a una release antigua.
 
-```bash
-sudo tail -n 100 /var/log/nginx/access.log
-```
+## Rollback manual
 
-Últimos errores:
-
-```bash
-sudo tail -n 100 /var/log/nginx/error.log
-```
-
-Seguimiento en tiempo real:
-
-```bash
-sudo tail -f /var/log/nginx/error.log
-```
-
-Logs del servicio:
-
-```bash
-sudo journalctl -u nginx --since "30 minutes ago"
-```
-
-## Rollback básico
-
-Para volver temporalmente a un commit anterior en el VPS:
+Listar releases y seleccionar el nombre completo de una release válida:
 
 ```bash
 cd /var/www/PorfolioJABejarano
-git log --oneline -n 10
-git reset --hard <commit>
-npm install
-npm run build
+ls -1dt releases/*/
+
+PREVIOUS="$(readlink -f current)"
+TARGET="/var/www/PorfolioJABejarano/releases/<release>"
+
+test -f "$TARGET/dist/index.html"
+
+ln -sfn "$TARGET" current.next
+mv -Tf current.next current
+
+curl --fail --location --head https://jabejarano.tech || {
+  ln -sfn "$PREVIOUS" current.next
+  mv -Tf current.next current
+  exit 1
+}
 ```
 
-Comprobar después:
+Si la release incluye `release.json`, comprobar también:
 
 ```bash
-git rev-parse --short HEAD
-test -f dist/index.html
-curl -I https://jabejarano.tech
+cat "$TARGET/dist/release.json"
+curl --fail --location https://jabejarano.tech/release.json
 ```
 
-Este rollback es temporal: el siguiente despliegue ejecutará `git reset --hard origin/main` y restaurará el estado actual de `main`. Para un rollback permanente se debe revertir el commit problemático en GitHub y hacer push a `main`.
+## Rollback desde GitHub Actions
+
+`.github/workflows/rollback.yml` se ejecuta manualmente y solicita el nombre de la release. Solo acepta:
+
+```text
+^[0-9]{8}_[0-9]{6}_[a-f0-9]{7,40}$|^bootstrap_[0-9]{8}_[0-9]{6}$
+```
+
+El workflow valida el input tanto en GitHub como en el VPS, comprueba `dist/index.html`, cambia el symlink y restaura automáticamente la release anterior si el health check falla.
+
+## Logs de Nginx
+
+```bash
+sudo tail -n 100 /var/log/nginx/access.log
+sudo tail -n 100 /var/log/nginx/error.log
+sudo tail -f /var/log/nginx/error.log
+sudo journalctl -u nginx --since "30 minutes ago"
+```
 
 ## Troubleshooting
 
-### Nginx no recarga por un error de sintaxis
+### El workflow falla en `npm ci`
 
-Validar la configuración y revisar el archivo indicado en el error:
+Comprobar que `package-lock.json` está versionado y sincronizado con `package.json`:
+
+```bash
+npm install --package-lock-only
+npm ci
+```
+
+El lockfile actualizado debe revisarse y enviarse al repositorio.
+
+### El build falla en GitHub Actions
+
+Reproducir con Node 22:
+
+```bash
+nvm use
+npm ci
+npm run build
+test -f dist/index.html
+```
+
+El VPS no interviene en esta fase.
+
+### GitHub Actions no puede conectar por SSH
+
+Comprobar:
+
+- `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` y `VPS_KNOWN_HOSTS`;
+- correspondencia entre clave privada y `authorized_keys`;
+- permisos `700` para `.ssh` y `600` para `authorized_keys`;
+- huella del host tras cualquier reinstalación del VPS;
+- que UFW permite `OpenSSH`.
+
+### La subida termina pero la release no se activa
+
+Revisar permisos y estructura:
+
+```bash
+ls -ld /var/www/PorfolioJABejarano
+ls -ld /var/www/PorfolioJABejarano/releases
+ls -la /var/www/PorfolioJABejarano
+find /var/www/PorfolioJABejarano/releases -maxdepth 2 -name index.html
+```
+
+El usuario `deploy` debe poder crear directorios y reemplazar `current.next` y `current`.
+
+### La web responde pero muestra una release anterior
+
+Comparar el symlink, el archivo local y la respuesta pública:
+
+```bash
+cd /var/www/PorfolioJABejarano
+readlink -f current
+cat current/dist/release.json
+curl --fail --location \
+  "https://jabejarano.tech/release.json?nocache=$(date +%s)"
+```
+
+Si el symlink es correcto pero la respuesta no coincide, revisar el `root` activo con `sudo nginx -T` y cualquier caché o proxy situado delante de Nginx.
+
+### Nginx no recarga
 
 ```bash
 sudo nginx -t
 sudo journalctl -u nginx -n 100 --no-pager
 ```
 
-No ejecutar `reload` hasta que `nginx -t` confirme que la sintaxis es correcta. También se deben revisar enlaces rotos en `/etc/nginx/sites-enabled/`.
+No recargar hasta corregir la ruta o sintaxis indicada.
 
-### El dominio no apunta al VPS
+### Falla el health check después de cambiar `current`
 
-Comprobar DNS:
-
-```bash
-dig +short jabejarano.tech
-dig +short www.jabejarano.tech
-```
-
-Ambos deben devolver `72.62.235.87`. Si devuelven otra IP o no responden, se deben corregir los registros DNS en Hostinger y esperar su propagación.
-
-### Certbot falla al emitir el certificado
-
-Comprobar que:
-
-- ambos dominios resuelven a `72.62.235.87`;
-- Nginx responde por el puerto 80;
-- UFW permite `Nginx Full`;
-- `server_name` incluye los dos dominios;
-- `sudo nginx -t` no devuelve errores.
-
-Comandos de diagnóstico:
+El workflow restaura automáticamente el symlink anterior y termina con error. Revisar:
 
 ```bash
-sudo ufw status verbose
-sudo nginx -t
-curl -I http://jabejarano.tech
-sudo certbot certificates
+readlink -f /var/www/PorfolioJABejarano/current
+sudo tail -n 100 /var/log/nginx/error.log
+curl -i https://jabejarano.tech/release.json
 ```
 
-### GitHub Actions no puede conectarse por SSH
-
-Revisar:
-
-- que `VPS_HOST`, `VPS_USER` y `VPS_SSH_KEY` existen en GitHub;
-- que el secret contiene la clave privada completa y conserva los saltos de línea;
-- que la clave pública correspondiente está en `/home/deploy/.ssh/authorized_keys`;
-- que `.ssh` tiene permisos `700` y `authorized_keys` permisos `600`;
-- que UFW permite `OpenSSH`.
-
-Prueba desde Windows:
-
-```powershell
-ssh -i $env:USERPROFILE\.ssh\jabejarano_actions_ed25519 deploy@72.62.235.87
-```
-
-### El build falla en producción
-
-Ejecutar manualmente los mismos comandos del workflow:
-
-```bash
-sudo -iu deploy
-cd /var/www/PorfolioJABejarano
-git status
-node --version
-npm --version
-npm install
-npm run build
-```
-
-Revisar el primer error real del build, el espacio disponible con `df -h` y que `deploy` pueda escribir en el repositorio y en `dist`.
-
-### El portfolio no muestra los cambios tras hacer push
-
-Comprobar, en este orden:
-
-1. Que el workflow de GitHub Actions terminó correctamente.
-2. Que el push se hizo a `main`.
-3. Que el VPS está en el commit esperado.
-4. Que `dist` se regeneró.
-5. Que Nginx sigue apuntando al directorio correcto.
-
-```bash
-cd /var/www/PorfolioJABejarano
-git rev-parse --short HEAD
-git log -1 --oneline
-ls -lah dist/index.html
-grep -R "root /var/www/PorfolioJABejarano/dist" /etc/nginx/sites-enabled/
-sudo nginx -t
-```
-
-Si el commit y `dist` son correctos, hacer una recarga forzada del navegador o comprobar la respuesta con `curl` para descartar caché local.
+La release fallida se conserva para diagnóstico y no se ejecuta la limpieza de releases antiguas.

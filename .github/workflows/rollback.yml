@@ -1,0 +1,110 @@
+name: Roll back portfolio release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: Release directory name to activate
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portfolio-production
+  cancel-in-progress: false
+
+env:
+  DEPLOY_BASE: /var/www/PorfolioJABejarano
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Validate release input
+        shell: bash
+        env:
+          RELEASE: ${{ inputs.release }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$RELEASE" =~ ^([0-9]{8}_[0-9]{6}_[a-f0-9]{7,40}|bootstrap_[0-9]{8}_[0-9]{6})$ ]]; then
+            echo "Invalid release name: $RELEASE" >&2
+            exit 1
+          fi
+
+      - name: Configure SSH
+        shell: bash
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/vps_key
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/vps_key ~/.ssh/known_hosts
+          test -s ~/.ssh/vps_key
+          test -s ~/.ssh/known_hosts
+
+      - name: Activate previous release
+        shell: bash
+        env:
+          RELEASE: ${{ inputs.release }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          set -euo pipefail
+          ssh -o BatchMode=yes -o IdentitiesOnly=yes -i ~/.ssh/vps_key \
+            "$VPS_USER@$VPS_HOST" \
+            "bash -s -- '$DEPLOY_BASE' '$RELEASE'" <<'REMOTE'
+          set -euo pipefail
+
+          BASE_DIR="$1"
+          RELEASE="$2"
+
+          if [[ ! "$RELEASE" =~ ^([0-9]{8}_[0-9]{6}_[a-f0-9]{7,40}|bootstrap_[0-9]{8}_[0-9]{6})$ ]]; then
+            echo "Invalid release name" >&2
+            exit 1
+          fi
+
+          PREVIOUS="$(readlink -f "$BASE_DIR/current")"
+          TARGET="$BASE_DIR/releases/$RELEASE"
+
+          test -d "$PREVIOUS"
+          test -f "$TARGET/dist/index.html"
+
+          ln -sfn "$TARGET" "$BASE_DIR/current.next"
+          mv -Tf "$BASE_DIR/current.next" "$BASE_DIR/current"
+          test "$(readlink -f "$BASE_DIR/current")" = "$TARGET"
+
+          restore_previous() {
+            ln -sfn "$PREVIOUS" "$BASE_DIR/current.next"
+            mv -Tf "$BASE_DIR/current.next" "$BASE_DIR/current"
+          }
+
+          if ! curl --fail --silent --show-error --location --head \
+            --retry 5 --retry-delay 2 https://jabejarano.tech; then
+            restore_previous
+            exit 1
+          fi
+
+          if [ -s "$TARGET/dist/release.json" ]; then
+            EXPECTED_SHA="$(sed -n 's/.*\"sha\":\"\([^\"]*\)\".*/\1/p' "$TARGET/dist/release.json")"
+            test -n "$EXPECTED_SHA"
+
+            if ! PUBLISHED_RELEASE="$(curl --fail --silent --show-error --location \
+              --retry 5 --retry-delay 2 \
+              "https://jabejarano.tech/release.json?release=$RELEASE")"; then
+              restore_previous
+              exit 1
+            fi
+
+            if ! printf '%s' "$PUBLISHED_RELEASE" | grep -Fq "\"sha\":\"$EXPECTED_SHA\""; then
+              restore_previous
+              exit 1
+            fi
+          fi
+          REMOTE
