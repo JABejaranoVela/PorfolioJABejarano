@@ -163,6 +163,19 @@ const pageDescription = project.shortDescription
             </section>
           )
         }
+
+        {
+          project.deployment && project.deployment.length > 0 && (
+            <section>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                Despliegue e infraestructura
+              </h2>
+              <div class="mt-4 grid gap-4 leading-7 text-gray-700 dark:text-gray-300">
+                {project.deployment.map((paragraph) => <p>{paragraph}</p>)}
+              </div>
+            </section>
+          )
+        }
       </div>
     </article>
   </main>

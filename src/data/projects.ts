@@ -10,6 +10,7 @@ export interface Project {
   features: string[]
   technicalHighlights: string[]
   learned?: string
+  deployment?: string[]
   image?: string
   demoUrl: string | null
   githubUrl: string | null
@@ -69,6 +70,10 @@ export const projects: Project[] = [
     ],
     learned:
       "El proyecto demuestra cómo combinar reglas explícitas y embeddings para crear recomendaciones interpretables. También refuerza la importancia de normalizar skills antes de comparar perfiles, persistir la versión del algoritmo y separar responsabilidades entre autenticación, procesamiento de CV, importación de ofertas, matching y correo.",
+    deployment: [
+      "SkillMatch AI está desplegado en un VPS Ubuntu con Docker, Nginx y HTTPS. La arquitectura separa frontend, backend, base de datos, worker de email y datos persistentes, manteniendo los servicios internos aislados y exponiendo públicamente solo el acceso web mediante reverse proxy.",
+      "El despliegue se automatiza con GitHub Actions mediante un pipeline CI/CD que valida backend y frontend, construye imágenes, actualiza la aplicación en el servidor, ejecuta migraciones, realiza backups previos y comprueba el estado mediante health checks.",
+    ],
     image: "/projects/skillmatch-ai/landing-desktop.png",
     demoUrl: "https://skillmatch.jabejarano.tech/",
     githubUrl: "https://github.com/JABejaranoVela/SkillMatch-AI",
