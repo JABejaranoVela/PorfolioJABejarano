@@ -103,5 +103,6 @@ export const projects: Project[] = [
     image: "/projects/socialMediaDashboard.png",
     demoUrl: "https://jabejaranosocialmediadashboard.netlify.app/",
     githubUrl: "https://github.com/JABejaranoVela/SocialMediaDashboard",
+    showGithubAlongsideDemo: true,
   },
 ]
