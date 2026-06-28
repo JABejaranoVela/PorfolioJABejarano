@@ -13,6 +13,7 @@ export interface Project {
   image?: string
   demoUrl: string | null
   githubUrl: string | null
+  showGithubAlongsideDemo?: boolean
 }
 
 export const projects: Project[] = [
@@ -69,8 +70,9 @@ export const projects: Project[] = [
     learned:
       "El proyecto demuestra cómo combinar reglas explícitas y embeddings para crear recomendaciones interpretables. También refuerza la importancia de normalizar skills antes de comparar perfiles, persistir la versión del algoritmo y separar responsabilidades entre autenticación, procesamiento de CV, importación de ofertas, matching y correo.",
     image: "/projects/skillmatch-ai/landing-desktop.png",
-    demoUrl: null,
+    demoUrl: "https://skillmatch.jabejarano.tech/",
     githubUrl: "https://github.com/JABejaranoVela/SkillMatch-AI",
+    showGithubAlongsideDemo: true,
   },
   {
     slug: "social-media-dashboard",

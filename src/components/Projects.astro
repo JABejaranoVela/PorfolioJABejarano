@@ -40,17 +40,8 @@ import { projects } from "@/data/projects"
             >
               Ver detalles
             </a>
-            {project.demoUrl ? (
-              <a
-                href={project.demoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center rounded-xl border border-yellow-500 bg-yellow-400 px-4 py-2 text-base font-medium text-gray-950 transition hover:bg-yellow-300"
-              >
-                Ver demo
-              </a>
-            ) : (
-              project.githubUrl && (
+            {project.githubUrl &&
+              (!project.demoUrl || project.showGithubAlongsideDemo) && (
                 <a
                   href={project.githubUrl}
                   target="_blank"
@@ -59,7 +50,16 @@ import { projects } from "@/data/projects"
                 >
                   GitHub
                 </a>
-              )
+              )}
+            {project.demoUrl && (
+              <a
+                href={project.demoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center rounded-xl border border-yellow-500 bg-yellow-400 px-4 py-2 text-base font-medium text-gray-950 transition hover:bg-yellow-300"
+              >
+                Ver demo
+              </a>
             )}
           </footer>
         </div>
